@@ -22,8 +22,6 @@ import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.api.common.functions.FilterFunction;
-import org.apache.flink.api.java.io.CsvReader;
-import org.apache.flink.streaming.api.datastream.DataStream;
 
 /**
  * Skeleton for a Flink Batch Job.
