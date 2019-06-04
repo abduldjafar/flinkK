@@ -20,6 +20,7 @@ package flinkK;
 
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.common.operators.Order;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.api.common.functions.FilterFunction;
@@ -57,7 +58,16 @@ public class BatchJobFilterExamp {
 				.filter(new FilterLength())
 				.flatMap(new Extract())
 				.flatMap(new ConvertToBiasa())
-				.filter(new GetMostLikes());
+				.filter(new GetMostLikes())
+				.sortPartition(2, Order.DESCENDING)
+				.setParallelism(1)
+				.flatMap(new FlatMapFunction<Tuple3<String, Integer, Double>, Tuple3<String, Integer, Double>>() {
+					@Override
+					public void flatMap(Tuple3<String, Integer, Double> data, Collector<Tuple3<String, Integer, Double>> collector) throws Exception {
+						collector.collect(new Tuple3<>(data.f0,data.f1,data.f2));
+					}
+				});
+
 
 		data.print();
 	}
