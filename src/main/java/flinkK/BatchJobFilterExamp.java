@@ -78,10 +78,8 @@ public class BatchJobFilterExamp {
 				}catch (NumberFormatException e){
 					views = 0;
 				}
-
 			}
 			return strings.length == 16 && views > 100000;
-
 		}
 	}
 
