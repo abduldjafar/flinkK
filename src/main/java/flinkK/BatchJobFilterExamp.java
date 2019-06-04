@@ -23,7 +23,8 @@ import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.api.common.functions.FilterFunction;
-import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
+import org.apache.flink.types.DoubleValue;
 import org.apache.flink.types.IntValue;
 import org.apache.flink.types.StringValue;
 import org.apache.flink.util.Collector;
@@ -51,11 +52,12 @@ public class BatchJobFilterExamp {
 		// set up the batch execution environment
 		final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
 
-		DataSet<Tuple2<String, Integer>> data = env.readTextFile("USvideos.csv")
+		DataSet<Tuple3<String, Integer, Double>> data = env.readTextFile("USvideos.csv")
 				.map(new SplitText())
 				.filter(new FilterLength())
 				.flatMap(new Extract())
-				.flatMap(new ConvertToBiasa());
+				.flatMap(new ConvertToBiasa())
+				.filter(new GetMostLikes());
 
 		data.print();
 	}
@@ -83,28 +85,43 @@ public class BatchJobFilterExamp {
 		}
 	}
 
+	private static class GetMostLikes implements FilterFunction<Tuple3<String, Integer, Double>> {
+		@Override
+		public boolean filter(Tuple3<String, Integer, Double> datas) throws Exception {
+			return datas.f2 > 20.00;
+		}
+	}
 
-	private static class Extract implements FlatMapFunction <String[],Tuple2<StringValue,IntValue>> {
+	private static class Extract implements FlatMapFunction <String[], Tuple3<StringValue,IntValue,DoubleValue>> {
 		// Mutable int field to reuse to reduce GC pressure
 		StringValue judul = new StringValue();
 		IntValue	views = new IntValue();
+		DoubleValue	likes = new DoubleValue();
 
 		// Reuse rating value and result tuple
-		Tuple2<StringValue, IntValue> result = new Tuple2<>(judul, views);
+		Tuple3<StringValue, IntValue, DoubleValue> result = new Tuple3<>(judul, views, likes);
 
 		@Override
-		public void flatMap(String[] data, Collector<Tuple2<StringValue,IntValue>> collector) throws Exception {
+		public void flatMap(String[] data, Collector<Tuple3<StringValue,IntValue,DoubleValue>> collector) throws Exception {
 			// Ignore CSV header
+			if (!data[8].equals("likes")) {
+				try{
+					likes.setValue((Double.parseDouble(data[8])/Double.parseDouble(data[7]))*100);
+				}catch (NumberFormatException e){
+					likes.setValue(0.00);
+				}
+			}
 			judul.setValue(data[2]);
 			views.setValue(Integer.parseInt(data[7]));
 			collector.collect(result);
 		}
 	}
 
-	private static class ConvertToBiasa implements FlatMapFunction<Tuple2<StringValue,IntValue>,Tuple2<String, Integer>>{
+	private static class ConvertToBiasa implements FlatMapFunction<Tuple3<StringValue,IntValue, DoubleValue>,Tuple3<String, Integer, Double>>{
 		@Override
-		public void flatMap(Tuple2<StringValue, IntValue> data, Collector<Tuple2<String, Integer>> collector) throws Exception {
-			collector.collect(new Tuple2<String, Integer>(data.f0.toString(),Integer.parseInt(data.f1.toString())));
+		public void flatMap(Tuple3<StringValue, IntValue, DoubleValue> data, Collector<Tuple3<String, Integer, Double>> collector) throws Exception {
+			collector.collect(new Tuple3<String, Integer, Double>(data.f0.toString(),Integer.parseInt(data.f1.toString()),
+					Double.parseDouble(data.f2.toString())));
 		}
 	}
 }
