@@ -1,15 +1,24 @@
 pipeline {
   agent any
   stages {
-    stage('list'){
+    stage('list') {
       steps {
         sh 'ls -al'
         sh 'pwd'
       }
     }
     stage('Build') {
-      steps {
-        sh 'mvn -B -DskipTests clean package'
+      parallel {
+        stage('Build') {
+          steps {
+            sh 'mvn -B -DskipTests clean package'
+          }
+        }
+        stage('build2') {
+          steps {
+            sh 'echo "hai"'
+          }
+        }
       }
     }
   }
