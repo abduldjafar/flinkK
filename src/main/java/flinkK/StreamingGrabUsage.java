@@ -40,11 +40,7 @@ public class StreamingGrabUsage {
     }
 
     private static class CleanFunc implements MapFunction<String, Row> {
-        /**
-         * @param data String
-         * @return hasil as List  String
-         * @throws Exception Fungsi maping flink yang menerapkan proses cleansing tweet
-         */
+
         @Override
         public Row map(String data) throws Exception {
 
