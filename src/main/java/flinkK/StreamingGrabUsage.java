@@ -1,13 +1,18 @@
 package flinkK;
 
+import flinkSink.JdbcSink;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
+import org.apache.flink.api.java.io.jdbc.JDBCAppendTableSink;
 import org.apache.flink.api.java.io.jdbc.JDBCOutputFormat;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.datastream.DataStreamSink;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.types.Row;
+
+import java.sql.DriverManager;
 import java.sql.Types;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -19,7 +24,7 @@ public class StreamingGrabUsage {
 
     final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-    String strQuery = "INSERT INTO grab (harga,tanggal) VALUES (?, ?)";
+    String strQuery = "INSERT INTO grab (harga,tanggal) VALUES (?, ?);";
 
     JDBCOutputFormat jdbcOutput = JDBCOutputFormat.buildJDBCOutputFormat()
               .setDrivername("org.postgresql.Driver")
@@ -28,13 +33,12 @@ public class StreamingGrabUsage {
               .setSqlTypes(new int[] { Types.INTEGER, Types.DATE}) //set the types
               .finish();
 
-
     Properties properties = new Properties();
     properties.setProperty("bootstrap.servers", "localhost:9092");
     DataStreamSink<Row> stream = env.addSource(new FlinkKafkaConsumer<>("test", new SimpleStringSchema(), properties))
             .rebalance()
             .map(new CleanFunc())
-            .writeUsingOutputFormat(jdbcOutput);
+            .addSink(new JdbcSink());
 
     env.execute("runss");
     }
