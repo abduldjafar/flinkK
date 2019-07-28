@@ -1,7 +1,6 @@
 package flinkSink;
 
 import org.apache.flink.types.Row;
-
 import java.sql.Date;
 import java.sql.PreparedStatement;
 

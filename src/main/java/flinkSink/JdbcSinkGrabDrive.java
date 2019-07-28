@@ -3,8 +3,6 @@ package flinkSink;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.apache.flink.types.Row;
-
-import javax.validation.constraints.Null;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
