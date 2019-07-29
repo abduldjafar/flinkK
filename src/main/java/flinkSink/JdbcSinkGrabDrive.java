@@ -9,8 +9,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 
 public class JdbcSinkGrabDrive extends RichSinkFunction<Row> {
-    private Connection connection = null;
-    private PreparedStatement preparedStatement = null;
+    public Connection connection = null;
+    public PreparedStatement preparedStatement = null;
     public String sql = "";
 
     public JdbcSinkGrabDrive(){
@@ -25,8 +25,8 @@ public class JdbcSinkGrabDrive extends RichSinkFunction<Row> {
         String username = "postgres";
         String password = "toor";
         Class.forName(driver);
-        connection = DriverManager.getConnection(url, username, password);
-        preparedStatement = connection.prepareStatement(this.sql);
+        this.connection = DriverManager.getConnection(url, username, password);
+        this.preparedStatement = connection.prepareStatement(this.sql);
     }
 
     @Override
@@ -34,16 +34,16 @@ public class JdbcSinkGrabDrive extends RichSinkFunction<Row> {
         try {
             //4.组装数据，执行插入操作
             if(
-                    row.getField(0) != null && row.getField(2) != null&&
+                    row.getField(0) != null && row.getField(1) != null&&
                             row.getField(2) != null && row.getField(3) != null &&
                             row.getField(4) != null
             ){
-                preparedStatement.setInt(1, (Integer) row.getField(0));
-                preparedStatement.setDate(2, (Date) row.getField(1));
-                preparedStatement.setString(3, (String) row.getField(2));
-                preparedStatement.setString(4, (String) row.getField(3));
-                preparedStatement.setString(5, (String) row.getField(4));
-                preparedStatement.executeUpdate();
+                this.preparedStatement.setInt(1, (Integer) row.getField(0));
+                this.preparedStatement.setDate(2, (Date) row.getField(1));
+                this.preparedStatement.setString(3, (String) row.getField(2));
+                this.preparedStatement.setString(4, (String) row.getField(3));
+                this.preparedStatement.setString(5, (String) row.getField(4));
+                this.preparedStatement.executeUpdate();
             }
 
         } catch (Exception e) {
@@ -54,11 +54,11 @@ public class JdbcSinkGrabDrive extends RichSinkFunction<Row> {
     public void close() throws Exception {
         super.close();
         //5.关闭连接和释放资源
-        if (connection != null) {
-            connection.close();
+        if (this.connection != null) {
+            this.connection.close();
         }
-        if (preparedStatement != null) {
-            preparedStatement.close();
+        if (this.preparedStatement != null) {
+            this.preparedStatement.close();
         }
     }
 
