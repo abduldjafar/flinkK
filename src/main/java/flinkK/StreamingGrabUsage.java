@@ -68,7 +68,6 @@ public class StreamingGrabUsage {
 
         // setiap membuat thread harus mengembalikan return
         Thread taskGrabDrive = new Thread(() -> {
-                // your code here ...
             try{
                 env.execute("grabdrive");
             }catch(Exception e){
@@ -77,7 +76,6 @@ public class StreamingGrabUsage {
         });
 
         Thread taskGrabFood = new Thread(() -> {
-                // your code here ...
                 try{
                     env2.execute("GrabFood");
                 }catch(Exception e){
