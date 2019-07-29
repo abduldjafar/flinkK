@@ -79,7 +79,8 @@ public class StreamingGrabUsage {
     Thread taskGrabFood = new Thread(() -> {
             // your code here ...
             try{
-                env2.execute("GrabFood");            }catch(Exception e){
+                env2.execute("GrabFood");
+            }catch(Exception e){
                 System.out.println(e.toString());
             }
     });
