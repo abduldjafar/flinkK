@@ -46,48 +46,47 @@ public class StreamingGrabUsage {
 
     public static void main(String[] args) throws Exception {
 
-    final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-    final StreamExecutionEnvironment env2 = StreamExecutionEnvironment.getExecutionEnvironment();
+        final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+        final StreamExecutionEnvironment env2 = StreamExecutionEnvironment.getExecutionEnvironment();
 
-    Properties properties = new Properties();
-    properties.setProperty("bootstrap.servers", "localhost:9092");
+        Properties properties = new Properties();
+        properties.setProperty("bootstrap.servers", "localhost:9092");
 
-    DataStreamSink<Row> streamGrabDrive = env
-            .addSource(new FlinkKafkaConsumer<>("emailraw", new SimpleStringSchema(), properties))
-            .rebalance()
-            .map(new GetGoDriveData())
-            .setParallelism(5)
-            .addSink(new JdbcSinkGrabDrive());
+        DataStreamSink<Row> streamGrabDrive = env
+                .addSource(new FlinkKafkaConsumer<>("emailraw", new SimpleStringSchema(), properties))
+                .rebalance()
+                .map(new GetGoDriveData())
+                .setParallelism(5)
+                .addSink(new JdbcSinkGrabDrive());
 
-    DataStreamSink<Row> StreamGrabFood = env2
-            .addSource(new FlinkKafkaConsumer<>("emailraw", new SimpleStringSchema(), properties))
-            .rebalance()
-            .map(new GetGoFoodData())
-            .setParallelism(5)
-            .addSink(new JdbcSinkGrabFood());
+        DataStreamSink<Row> StreamGrabFood = env2
+                .addSource(new FlinkKafkaConsumer<>("emailraw", new SimpleStringSchema(), properties))
+                .rebalance()
+                .map(new GetGoFoodData())
+                .setParallelism(5)
+                .addSink(new JdbcSinkGrabFood());
 
-    // setiap membuat thread harus mengembalikan return
-    Thread taskGrabDrive = new Thread(() -> {
-            // your code here ...
-        try{
-            env.execute("grabdrive");
-        }catch(Exception e){
-            System.out.println(e.toString());
-        }
-    });
-
-    Thread taskGrabFood = new Thread(() -> {
-            // your code here ...
+        // setiap membuat thread harus mengembalikan return
+        Thread taskGrabDrive = new Thread(() -> {
+                // your code here ...
             try{
-                env2.execute("GrabFood");
+                env.execute("grabdrive");
             }catch(Exception e){
                 System.out.println(e.toString());
             }
-    });
+        });
 
+        Thread taskGrabFood = new Thread(() -> {
+                // your code here ...
+                try{
+                    env2.execute("GrabFood");
+                }catch(Exception e){
+                    System.out.println(e.toString());
+                }
+        });
 
-    taskGrabDrive.start();
-    taskGrabFood.start();
+        taskGrabDrive.start();
+        taskGrabFood.start();
 
     }
 
